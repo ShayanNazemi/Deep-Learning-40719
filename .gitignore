@@ -140,3 +140,4 @@ cython_debug/
 
 # Datasets
 /HW1/data/*.npy
+*.png
