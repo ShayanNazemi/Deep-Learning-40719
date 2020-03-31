@@ -140,4 +140,4 @@ cython_debug/
 
 # Datasets
 /HW1/data/*.npy
-/HW3/Part4/PedestrianDataset
+/HW3/Part4/PedestrianDataset/
