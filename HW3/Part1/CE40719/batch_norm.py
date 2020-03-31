@@ -1,5 +1,5 @@
 import numpy as np
-from module import Module
+from CE40719.module import Module
 
 
 class BatchNormalization(Module):

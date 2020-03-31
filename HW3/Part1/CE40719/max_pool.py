@@ -3,11 +3,11 @@ from CE40719.module import Module
 
 
 class MaxPool(Module):
-    def __init__(self, name,height=1,width=1,stride=1):
+    def __init__(self, name, height=1, width=1, stride=1):
         super(MaxPool, self).__init__(name)
-        self.height=height #The height of each pooling region
-        self.width=width   #The width of each pooling region
-        self.stride=stride #The distance between adjacent pooling regions
+        self.height = height  # The height of each pooling region
+        self.width = width  # The width of each pooling region
+        self.stride = stride  # The distance between adjacent pooling regions
 
     def forward(self, x, **kwargs):
         """
@@ -17,7 +17,9 @@ class MaxPool(Module):
         """
         out = None
         # todo: implement the forward propagation for max_pool module.
-       
+
+
+
         return out
 
     def backward(self, dout):
@@ -27,6 +29,5 @@ class MaxPool(Module):
         """
         dx = None
         # todo: implement the backward propagation for Dense module.
-        
-        return dx
 
+        return dx
