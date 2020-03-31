@@ -9,104 +9,28 @@ from CE40719.group_batch_norm import *
 from CE40719.max_pool import *
 
 ###########################################################################
-#            Batch-Normalization forward pass Test                        #
+#            Group-Normalization backward Test                            #
 ###########################################################################
 np.random.seed(40959)
-# Check the training-time forward pass by checking means and variances
-# of features both before and after spatial batch normalization
-
-N, C, H, W = 2, 3, 4, 5
-x = 4 * np.random.randn(N, C, H, W) + 10
-
-print('Before spatial batch normalization:')
-print('  Shape: ', x.shape)
-print('  Means: ', x.mean(axis=(0, 2, 3)))
-print('  Stds: ', x.std(axis=(0, 2, 3)))
-
-# Means should be close to zero and stds close to one
-gamma, beta = np.ones(C), np.zeros(C)
-cnn_batchnorm = CnnBatchNorm('test',(N, C, H, W))
-cnn_batchnorm.batchnorm.gamma = gamma
-cnn_batchnorm.batchnorm.beta = beta
-out = cnn_batchnorm.forward(x)
-print('After spatial batch normalization:')
-print('  Shape: ', out.shape)
-print('  Means: ', out.mean(axis=(0, 2, 3)))
-print('  Stds: ', out.std(axis=(0, 2, 3)))
-
-# Means should be close to beta and stds close to gamma
-gamma, beta = np.asarray([3, 4, 5]), np.asarray([6, 7, 8])
-cnn_batchnorm.batchnorm.gamma = gamma
-cnn_batchnorm.batchnorm.beta = beta
-out= cnn_batchnorm.forward(x)
-print('After spatial batch normalization (nontrivial gamma, beta):')
-print('  Shape: ', out.shape)
-print('  Means: ', out.mean(axis=(0, 2, 3)))
-print('  Stds: ', out.std(axis=(0, 2, 3)))
-
-
-
-
-
-
-
-
-
-
-
-np.random.seed(40959)
-# Check the test-time forward pass by running the training-time
-# forward pass many times to warm up the running averages, and then
-# checking the means and variances of activations after a test-time
-# forward pass.
-N, C, H, W = 10, 4, 11, 12
-cnn_batchnorm = CnnBatchNorm('test',(N, C, H, W))
-cnn_batchnorm.train()
-for t in range(50):
-  x = 2.3 * np.random.randn(N, C, H, W) + 13
-  cnn_batchnorm.forward(x)
-cnn_batchnorm.test()
-x = 2.3 * np.random.randn(N, C, H, W) + 13
-a_norm = cnn_batchnorm.forward(x)
-
-# Means should be close to zero and stds close to one, but will be
-# noisier than training-time forward passes.
-print('After spatial batch normalization (test-time):')
-print('  means: ', a_norm.mean(axis=(0, 2, 3)))
-print('  stds: ', a_norm.std(axis=(0, 2, 3)))
-
-
-
-
-
-
-
-
-###########################################################################
-#            Batch-Normalization backward pass Test                       #
-###########################################################################
-np.random.seed(40959)
-N, C, H, W = 2, 3, 2, 2
+N, C, H, W = 2, 4, 2, 2
+G = 2
 x = 5 * np.random.randn(N, C, H, W) + 12
-gamma = np.random.randn(C)
-beta = np.random.randn(C)
 dout = np.random.randn(N, C, H, W)
-cnn_batchnorm = CnnBatchNorm('Test',(N, C, H, W))
-cnn_batchnorm.batchnorm.gamma = gamma
-cnn_batchnorm.batchnorm.beta = beta
-cnn_batchnorm.train()
-_ = cnn_batchnorm.forward(x)
-dx = cnn_batchnorm.backward(dout)
-dgamma = cnn_batchnorm.dgamma
-dbeta = cnn_batchnorm.dbeta
-correct_dx = np.array([[[[0.00589789,  1.2557341 ],[-0.18515455, -0.3084614 ]],
-                        [[-0.04023214, -0.11912787],[-0.04556006, -0.00270806]],
-                        [[ 0.12266522, -0.07093585],[ 0.22957267,  0.17611092]]],
-                       [[[ 0.36047414, -0.01314037],[-0.62981818, -0.48553163]],
-                        [[ 0.18630326, -0.02134853],[-0.15169621,  0.19436962]],
-                        [[-0.00739465, -0.04518148],[-0.2105455,  -0.19429132]]]])
+norm = GroupBatchNorm('test',(N, C, H, W), G)
+_ = norm.forward(x)
+dx = norm.backward(dout)
+dgamma = norm.dgamma
+dbeta = norm.dbeta
+correct_dx = np.array([[[[-0.34315175, -0.12381128],[ 0.03543989, -0.10811583]],
+                        [[ 0.23704048,  0.26681368],[-0.35225047,  0.38803527]],
+                        [[ 0.08007765, -0.00905627],[-0.05405272, -0.10643134]],
+                        [[-0.09270617, -0.26378193],[ 0.36204868,  0.08390209]]],
+                       [[[-0.15694482,  0.13000584],[-0.10158775, -0.07278944]],
+                        [[ 0.29256627,  0.00665728],[-0.08065789, -0.0172495 ]],
+                        [[-0.01647735,  0.09978986],[-0.11498191,  0.05169455]],
+                        [[ 0.09743741, -0.18717901],[ 0.12091729, -0.05120085]]]])
 print('Relative error dx:', np.linalg.norm(dx - correct_dx))
-correct_dgamma = np.array([ 1.51945006, -1.09337409,  0.8928227 ])
+correct_dgamma = np.array([[[[-3.28150076]],[[-5.58372413]],[[ 2.98735869]],[[ 3.02274058]]]])
 print('Relative error dgamma:', np.linalg.norm(dgamma - correct_dgamma))
-correct_dbeta = np.array([-3.1690584,   3.01154949,  5.44132887])
+correct_dbeta = np.array([[[[ 0.28621793]],[[ 5.8519097 ]],[[-3.48103948]],[[-2.95280322]]]])
 print('Relative error dbeta:', np.linalg.norm(dbeta - correct_dbeta))

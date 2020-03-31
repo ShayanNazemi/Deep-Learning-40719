@@ -47,13 +47,10 @@ class CnnBatchNorm(Module):
         # don't forget to update self.dgamma and self.dbeta.
         # Your implementation should be very short.
         (N, C, H, W) = dout.shape
-        dout = dout.swapaxes(0, 1).reshape(C, -1)
+        dx = self.batchnorm.backward(dout.swapaxes(0, 1).reshape(C, -1).T).T.reshape((C, N, H, W)).swapaxes(0, 1)
 
-        dx = self.batchnorm.backward(dout.T)
         self.dbeta = self.batchnorm.dbeta
         self.dgamma = self.batchnorm.dgamma
 
-        dx = dx.T.reshape((C, N, H, W)).swapaxes(0, 1)
-        
         return dx
 
