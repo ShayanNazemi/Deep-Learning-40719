@@ -29,11 +29,27 @@ class BatchNormalization(Module):
 
             out = None
 
+            (B, _) = x.shape
+            miu = np.mean(x, axis=0)
+            var = np.var(x, axis=0)
+            centered = x - miu
+            normalized = centered / np.sqrt(var + self.eps)
+            out = self.gamma * normalized + self.beta
+
+            self.running_mean = self.running_mean * self.momentum + (1 - self.momentum) * miu
+            self.running_var = self.running_var * self.momentum + (1 - self.momentum) * var
+
+            self.cache = (B, normalized, centered, var)
+
             return out
         else:
             # todo: implement the forward propagation for batch norm module for test phase.
             # use running_mean and running_var
             out = None
+
+            out = (x - self.running_mean[None, :]) / np.sqrt(self.running_var + self.eps)
+            out *= self.gamma
+            out += self.beta
 
             return out
 
@@ -45,6 +61,16 @@ class BatchNormalization(Module):
         # todo: implement the backward propagation for batch norm module.(train phase only)
         # don't forget to update self.dgamma and self.dbeta.
         dx = None
+
+        (B, normalized, centered, var) = self.cache
+
+        self.dgamma = (dout * normalized).sum(axis=0)
+        self.dbeta = dout.sum(axis=0)
+        dnorm = dout * self.gamma
+
+        temp = 1 / np.sqrt(var + self.eps)
+
+        dx = temp * dnorm - temp / B * dnorm.sum(axis=0) - temp * (dnorm * normalized).sum(axis=0) * normalized / B
 
         return dx
 

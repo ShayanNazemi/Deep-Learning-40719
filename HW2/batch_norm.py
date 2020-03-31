@@ -59,8 +59,8 @@ class BatchNormalization(Module):
 
         (B, normalized, centered, var) = self.cache
 
-        dgamma = (dout * normalized).sum(axis=0)
-        dbeta = dout.sum(axis=0)
+        self.dgamma = (dout * normalized).sum(axis=0)
+        self.dbeta = dout.sum(axis=0)
         dnorm = dout * self.gamma
 
         temp = 1 / np.sqrt(var + self.eps)

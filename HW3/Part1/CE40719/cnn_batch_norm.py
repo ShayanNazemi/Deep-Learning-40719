@@ -5,7 +5,7 @@ from CE40719.batch_norm import BatchNormalization
 class CnnBatchNorm(Module):
     def __init__(self, name, input_shape, momentum=.9, epsilon=1e-5):
         super(CnnBatchNorm, self).__init__(name)
-        N, C, H, W = input_shape
+        (N, C, H, W) = input_shape
         self.momentum = momentum  # momentum rate for computing running_mean and running_var
         self.gamma = np.ones(C)  # Scale parameter, of shape (C,).
         self.beta = np.zeros(C)  # Shift parameter, of shape (C,).
@@ -26,11 +26,13 @@ class CnnBatchNorm(Module):
             self.batchnorm.train()
         else:
             self.batchnorm.test()
-        out =  None
+        out = None
         # todo: implement the forward propagation for cnn batch norm module.
         # use self.batchnorm.forward()
-        # Your implementation should be very short.     
-        
+        # Your implementation should be very short.
+
+        (N, C, H, W) = x.shape
+        out = self.batchnorm.forward(x.swapaxes(0, 1).reshape(C, -1).T).T.reshape(C, N, H, W).swapaxes(0, 1)
 
         return out
 
@@ -44,6 +46,14 @@ class CnnBatchNorm(Module):
         # use self.batchnorm.backward()
         # don't forget to update self.dgamma and self.dbeta.
         # Your implementation should be very short.
+        (N, C, H, W) = dout.shape
+        dout = dout.swapaxes(0, 1).reshape(C, -1)
+
+        dx = self.batchnorm.backward(dout.T)
+        self.dbeta = self.batchnorm.dbeta
+        self.dgamma = self.batchnorm.dgamma
+
+        dx = dx.T.reshape((C, N, H, W)).swapaxes(0, 1)
         
         return dx
 
