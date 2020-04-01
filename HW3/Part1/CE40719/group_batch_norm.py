@@ -35,9 +35,6 @@ class GroupBatchNorm(Module):
         self.cache = (x_, mean, var, out.reshape((N, C, H, W)))
 
         out = out.reshape((N, C, H, W)) * self.gamma + self.beta
-        print(out.shape, '\n\n\n')
-
-
 
         return out
 
@@ -60,9 +57,6 @@ class GroupBatchNorm(Module):
         self.dgamma = np.sum(dout * norm, axis=(0, 2, 3), keepdims=True)
 
         dx = (dnorm - (dnorm.mean(axis=(2, 3, 4), keepdims=True) + (dnorm * norm.reshape(dnorm.shape)).mean(axis=(2, 3, 4), keepdims=True) * norm.reshape(dnorm.shape))) / np.sqrt(var + self.eps)
-
         dx = dx.reshape(N, C, H, W)
-
-
 
         return dx

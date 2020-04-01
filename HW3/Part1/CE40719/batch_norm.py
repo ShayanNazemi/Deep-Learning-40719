@@ -38,7 +38,6 @@ class BatchNormalization(Module):
 
             self.running_mean = self.running_mean * self.momentum + (1 - self.momentum) * miu
             self.running_var = self.running_var * self.momentum + (1 - self.momentum) * var
-
             self.cache = (B, normalized, centered, var)
 
             return out
@@ -66,10 +65,9 @@ class BatchNormalization(Module):
 
         self.dgamma = (dout * normalized).sum(axis=0)
         self.dbeta = dout.sum(axis=0)
+
         dnorm = dout * self.gamma
-
         temp = 1 / np.sqrt(var + self.eps)
-
         dx = temp * dnorm - temp / B * dnorm.sum(axis=0) - temp * (dnorm * normalized).sum(axis=0) * normalized / B
 
         return dx
