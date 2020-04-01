@@ -58,5 +58,5 @@ class MaxPool(Module):
                 for j in range(0, o_h):
                     for i in range(0, o_w):
                         index = self.cache['indices'][b, c, j, i]
-                        dx[b, c, j * s + int(index / h), i * s + int(index % w)] = dout[b, c, j, i]
+                        dx[b, c, j * s + int(index / w), i * s + int(index % w)] = dout[b, c, j, i]
         return dx
